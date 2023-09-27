@@ -1,0 +1,6 @@
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "/home/alunos/.jdks/jsoup-1.16.1.jar"
+    ]
+}
