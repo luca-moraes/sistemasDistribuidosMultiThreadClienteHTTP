@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -13,68 +14,172 @@ public class FileDownloader {
 
     public FileDownloader(String url){
         this.siteUrl = url;
-        downloadHTML(siteUrl);
+        // downloadHTML(siteUrl);
     }
 
     public String getFilePath(){
         return this.filePath;
     }
 
-    private void downloadHTML(String siteUrl) {
+    public String getResponseContent(String siteUrl) throws ClassNotFoundException{
+        // StringBuilder response = new StringBuilder();
+
+        // try (Socket socket = new Socket(siteUrl, 80)) {
+        //     // Enviar a solicitação ao servidor para "/pagina.html"
+        //     OutputStream outputStream = socket.getOutputStream();
+        //     PrintWriter out = new PrintWriter(outputStream, true);
+
+        //     out.println("GET / HTTP/1.1");
+        //     out.println("Host: " + siteUrl);
+        //     out.println("User-Agent: curl/7.81.0");
+        //     out.println("Accept: */*");  
+        //     out.println();
+
+        //     // Receber a resposta do servidor
+        //     InputStream inputStream = socket.getInputStream();
+        //     BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+
+        //     String inputLine;
+        //     StringBuilder response = new StringBuilder();
+
+        //     while ((inputLine = in.readLine()) != null) {
+        //         response.append(inputLine).append("\n");
+        //     }
+
+        //     // Processar a resposta (HTML modificado)
+        //     String processedHtml = response.toString();
+
+        //     // Exibir o HTML processado
+        //     System.out.println(processedHtml);
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
+
+        // try (Socket socket = new Socket(siteUrl, 80);
+        //     PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        //     BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+
+        //     out.println("GET / HTTP/1.1");
+        //     out.println("Host: " + siteUrl);
+        //     out.println("User-Agent: curl/7.81.0");
+        //     out.println("Accept: */*");
+        //     out.println();
+
+        //     String inputLine;
+        //     while ((inputLine = in.readLine()) != null) {
+        //         response.append(inputLine);
+        //         response.append(System.lineSeparator());
+        //     }
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
+
+        // return response.toString();
+
+        // try{
+        //     InetAddress host = InetAddress.getByName(siteUrl);
+
+        //     var socket = new Socket(host, 80);
+            
+        //     ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+        //     ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+
+
+        //     System.out.println("Sending request to Socket Server");
+
+        //     oos.writeObject("GET / HTTP/1.1\n");
+        //     oos.writeObject("Host: " + host + "\n");
+        //     // oos.writeObject("User-Agent: curl/7.81.0\n");
+        //     // oos.writeObject("Accept: */*\n");
+        //     oos.writeObject("\n");
+        //     oos.flush();
+        //     oos.close();
+
+        //     //read the server response message
+        //     String message = ois.readObject().toString();
+
+        //     System.out.println("Message: " + message);
+
+        //     ois.close();
+
+        // }catch (IOException e) {
+        //     e.printStackTrace();
+        // }
+
+        // try {
+        //     InetAddress host = InetAddress.getByName(siteUrl);
+        //     Socket socket = new Socket(host, 80);
+
+        //     OutputStream os = socket.getOutputStream();
+
+        //     StringBuilder str = new StringBuilder();
+        //     str.append("GET / HTTP/1.1\nHost: ")
+        //     .append(siteUrl)
+        //     .append("\r\n");
+
+        //     os.write(str.toString().getBytes());
+        //     os.flush();
+
+        //     // os.close();
+
+        //     InputStream in = socket.getInputStream();
+
+        //     byte[] bt = in.readAllBytes();
+
+        //     // String line;
+        //     // StringBuilder response = new StringBuilder();
+
+        //     // while ((line = ) != null) {
+        //     //     response.append(line).append("\n");
+        //     // }
+
+        //     System.out.println("Resposta da página:");
+
+        //     System.out.println(bt.toString());
+
+        //     socket.close();
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
+
         try (Socket socket = new Socket(siteUrl, 80)) {
-            OutputStream outputStream = socket.getOutputStream();
-            PrintWriter out = new PrintWriter(outputStream, true);
-            out.println("GET / HTTP/1.1");
-            out.println("Host: " + siteUrl);
-            out.println();
+ 
+            OutputStream output = socket.getOutputStream();
 
-            InputStream inputStream = socket.getInputStream();
-            BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+            StringBuilder str = new StringBuilder();
+ 
+            str.append("GET / HTTP/1.1\nHost: ");
+            str.append(siteUrl);
+            str.append("\r\n");
+ 
+            output.write(str.toString().getBytes());
 
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine).append("\n");
+            InputStream input = socket.getInputStream();
+ 
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+ 
+            String line;
+ 
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
             }
-
-            String processedHtml = response.toString();
-
-            System.out.println(processedHtml);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            System.out.println("I/O error: " + ex.getMessage());
         }
 
-        try {
-            URL url = new URL(siteUrl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
+        return null;
+    }
 
-            int responseCode = conn.getResponseCode();
+    private void downloadHTML(String siteUrl) throws ClassNotFoundException, IOException {
+        this.filePath = "./files/index.html";
+        File file = new File(this.filePath);
 
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuilder content = new StringBuilder();
-                String line;
+        FileWriter writer = new FileWriter(file);
 
-                while ((line = in.readLine()) != null) {
-                    content.append(line);
-                    content.append(System.lineSeparator());
-                }
-                in.close();
+        String content = this.getResponseContent(siteUrl);
 
-                this.filePath = "./files/index.html";
-                File file = new File(this.filePath);
-
-                FileWriter writer = new FileWriter(file);
-                writer.write(content.toString());
-                writer.close();
-            } else {
-                System.exit(responseCode);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        writer.write(content.toString());
+        writer.close();
     }
 
     public void downloadImgs(List<HtmlTag> list){
