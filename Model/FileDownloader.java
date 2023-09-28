@@ -12,9 +12,9 @@ public class FileDownloader {
     private String siteUrl;
     private String filePath;
 
-    public FileDownloader(String url){
+    public FileDownloader(String url) throws ClassNotFoundException, IOException{
         this.siteUrl = url;
-        // downloadHTML(siteUrl);
+        this.downloadHTML(siteUrl);
     }
 
     public String getFilePath(){
@@ -22,125 +22,7 @@ public class FileDownloader {
     }
 
     public String getResponseContent(String siteUrl) throws ClassNotFoundException{
-        // StringBuilder response = new StringBuilder();
-
-        // try (Socket socket = new Socket(siteUrl, 80)) {
-        //     // Enviar a solicitação ao servidor para "/pagina.html"
-        //     OutputStream outputStream = socket.getOutputStream();
-        //     PrintWriter out = new PrintWriter(outputStream, true);
-
-        //     out.println("GET / HTTP/1.1");
-        //     out.println("Host: " + siteUrl);
-        //     out.println("User-Agent: curl/7.81.0");
-        //     out.println("Accept: */*");  
-        //     out.println();
-
-        //     // Receber a resposta do servidor
-        //     InputStream inputStream = socket.getInputStream();
-        //     BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-
-        //     String inputLine;
-        //     StringBuilder response = new StringBuilder();
-
-        //     while ((inputLine = in.readLine()) != null) {
-        //         response.append(inputLine).append("\n");
-        //     }
-
-        //     // Processar a resposta (HTML modificado)
-        //     String processedHtml = response.toString();
-
-        //     // Exibir o HTML processado
-        //     System.out.println(processedHtml);
-        // } catch (IOException e) {
-        //     e.printStackTrace();
-        // }
-
-        // try (Socket socket = new Socket(siteUrl, 80);
-        //     PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-        //     BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-
-        //     out.println("GET / HTTP/1.1");
-        //     out.println("Host: " + siteUrl);
-        //     out.println("User-Agent: curl/7.81.0");
-        //     out.println("Accept: */*");
-        //     out.println();
-
-        //     String inputLine;
-        //     while ((inputLine = in.readLine()) != null) {
-        //         response.append(inputLine);
-        //         response.append(System.lineSeparator());
-        //     }
-        // } catch (IOException e) {
-        //     e.printStackTrace();
-        // }
-
-        // return response.toString();
-
-        // try{
-        //     InetAddress host = InetAddress.getByName(siteUrl);
-
-        //     var socket = new Socket(host, 80);
-            
-        //     ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-        //     ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-
-
-        //     System.out.println("Sending request to Socket Server");
-
-        //     oos.writeObject("GET / HTTP/1.1\n");
-        //     oos.writeObject("Host: " + host + "\n");
-        //     // oos.writeObject("User-Agent: curl/7.81.0\n");
-        //     // oos.writeObject("Accept: */*\n");
-        //     oos.writeObject("\n");
-        //     oos.flush();
-        //     oos.close();
-
-        //     //read the server response message
-        //     String message = ois.readObject().toString();
-
-        //     System.out.println("Message: " + message);
-
-        //     ois.close();
-
-        // }catch (IOException e) {
-        //     e.printStackTrace();
-        // }
-
-        // try {
-        //     InetAddress host = InetAddress.getByName(siteUrl);
-        //     Socket socket = new Socket(host, 80);
-
-        //     OutputStream os = socket.getOutputStream();
-
-        //     StringBuilder str = new StringBuilder();
-        //     str.append("GET / HTTP/1.1\nHost: ")
-        //     .append(siteUrl)
-        //     .append("\r\n");
-
-        //     os.write(str.toString().getBytes());
-        //     os.flush();
-
-        //     // os.close();
-
-        //     InputStream in = socket.getInputStream();
-
-        //     byte[] bt = in.readAllBytes();
-
-        //     // String line;
-        //     // StringBuilder response = new StringBuilder();
-
-        //     // while ((line = ) != null) {
-        //     //     response.append(line).append("\n");
-        //     // }
-
-        //     System.out.println("Resposta da página:");
-
-        //     System.out.println(bt.toString());
-
-        //     socket.close();
-        // } catch (IOException e) {
-        //     e.printStackTrace();
-        // }
+        StringBuilder response = new StringBuilder();
 
         try (Socket socket = new Socket(siteUrl, 80)) {
  
@@ -148,26 +30,40 @@ public class FileDownloader {
 
             StringBuilder str = new StringBuilder();
  
-            str.append("GET / HTTP/1.1\nHost: ");
+            str.append("GET / HTTP/1.1\r\nHost: ");
             str.append(siteUrl);
+            str.append("\r\nUser-Agent: ChromeOficial\r\n");
+            str.append("Accept: */*\r\n");
             str.append("\r\n");
  
             output.write(str.toString().getBytes());
+            output.flush();
 
             InputStream input = socket.getInputStream();
  
             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
  
             String line;
- 
+            int lineBreakCounter = 0;
+            int endDoc = 0;
+
             while ((line = reader.readLine()) != null) {
-                System.out.println(line);
+                lineBreakCounter += line.contains("<!DOCTYPE html>") ? 1 : 0;
+
+                if(lineBreakCounter > 0 && endDoc < 1){
+                    response.append(line);
+                }
+
+                endDoc += line.contains("</html>") ? 1 : 0;
             }
+
+            socket.close();
         } catch (IOException ex) {
             System.out.println("I/O error: " + ex.getMessage());
         }
+        
 
-        return null;
+        return response.toString();
     }
 
     private void downloadHTML(String siteUrl) throws ClassNotFoundException, IOException {

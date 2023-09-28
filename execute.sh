@@ -4,6 +4,8 @@
 
 # javac -classpath "/home/alunos/.jdks/jsoup-1.16.1.jar;." *.java
 
+cd ./Model/
+
 javac -cp "./libs/jsoup-1.16.1.jar:./" *.java
 
 # java Main.java
