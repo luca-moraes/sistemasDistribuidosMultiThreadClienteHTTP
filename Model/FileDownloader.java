@@ -1,8 +1,10 @@
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class FileDownloader {
@@ -19,6 +21,30 @@ public class FileDownloader {
     }
 
     private void downloadHTML(String siteUrl) {
+        try (Socket socket = new Socket(siteUrl, 80)) {
+            OutputStream outputStream = socket.getOutputStream();
+            PrintWriter out = new PrintWriter(outputStream, true);
+            out.println("GET / HTTP/1.1");
+            out.println("Host: " + siteUrl);
+            out.println();
+
+            InputStream inputStream = socket.getInputStream();
+            BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine).append("\n");
+            }
+
+            String processedHtml = response.toString();
+
+            System.out.println(processedHtml);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         try {
             URL url = new URL(siteUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();

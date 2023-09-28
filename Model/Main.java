@@ -1,6 +1,6 @@
 public class Main{
     public static void main(String args[]){
-        String siteUrl = "http://legendas.tv/";
+        String siteUrl = "http://www.ufba.br/";
 
         FileDownloader fDownloader = new FileDownloader(siteUrl);
 
